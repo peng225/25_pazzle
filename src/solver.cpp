@@ -2,65 +2,74 @@
 
 int Solver::solve(State &initState)
 {
-  shared_ptr<State> initStatePtr = shared_ptr<State>(new State());  
-  *initStatePtr = initState;  
-
-  int dist = distance(initStatePtr);
-  initStatePtr->setValue(dist);
-  initStatePtr->setParent(NULL);
-
   cout << "start!" << endl;
   
+  shared_ptr<State> initStatePtr = shared_ptr<State>(new State());  
+  *initStatePtr = initState;  
+  
+  int dist = distance(initStatePtr);
+  
   // 初期状態が解だったら終了
-  if(initStatePtr->ordered()){
+  if(dist == 0){
     displaySolvedMessage(initStatePtr);
     return 0;
-  }
+  }  
 
   // 初期状態をopen stateに突っ込む
-  openState.push_back(initStatePtr);
+  initStatePtr->setParent(NULL);
+  openState[*initStatePtr] = dist;
 
   while(!openState.empty()){
-    shared_ptr<State> s = drawBestState();
-    if(s->ordered()){
-      displaySolvedMessage(s);
-      break;
-    }else{      
-      for(Direction d : dir){
-	shared_ptr<State> copyState = shared_ptr<State>(new State());
-	*copyState = *s;
-	if(copyState->moveSpace(d)){
-	  if(findState(begin(closeState), end(closeState), copyState)
-	     != end(closeState)){
-	    // cout << "Copied state is already in the close state. Skip." << endl;
-	    continue;
-	  }
-	}
-
+    shared_ptr<State> s = shared_ptr<State>(new State());
+    *s = drawBestState();
+    // 4方向に空白を動かす
+    for(Direction d : dir){
+      // コピーを作成
+      shared_ptr<State> copyState = shared_ptr<State>(new State());
+      *copyState = *s;
+      
+      // 方向dに動かすことができたら
+      if(copyState->moveSpace(d)){
 	dist = distance(copyState);
 	copyState->incStep();
-	copyState->setValue(dist + copyState->getStep());
 	copyState->setParent(s);
-	list<shared_ptr<State> >::iterator found;
-	if((found = findState(begin(openState), end(openState), copyState))
-	   != end(openState)){
-	  if(copyState->getValue() < (*found)->getValue()){
-	    *found = copyState;
+	
+	// 解である
+	if(dist == 0){
+	  displaySolvedMessage(copyState);
+	  return 0;
+	}
+	
+	// close stateである
+	if(closeState.find(*copyState) != end(closeState)){
+	  // cout << "Copied state is already in the close state. Skip." << endl;
+	  continue;
+	}
+	
+	// unordered_map<State, int>::iterator found;
+	map<State, int>::iterator found;
+	
+	// open stateである
+	if((found = openState.find(*copyState)) != end(openState)){
+	  // 既存のものより、新しいものの方が良ければupdate
+	  if(dist + copyState->getStep() < found->second){
+	    openState.erase(found);
+	    openState[*copyState] = dist + copyState->getStep();
 	  }else{
 	    // cout << "Copied state is already in the open state, and it's worse than the one. Skip."
 		 // << endl;
 	  }
 	}else{
-	  openState.push_back(copyState);
+	  openState[*copyState] = dist + copyState->getStep();
 	}
-      }
-      closeState.push_back(s);
+      }      
     }
+    closeState[*s] = 0;
   }
   return 0;
 }
 
-int Solver::distance(shared_ptr<State> s)
+int Solver::distance(const shared_ptr<State> s) const
 {
   int sumDistance = 0;
   for(int i = 0; i < NUM_PANEL; i++){
@@ -79,16 +88,18 @@ int Solver::distance(shared_ptr<State> s)
   return sumDistance;
 }
 
-shared_ptr<State> Solver::drawBestState()
+State Solver::drawBestState()
 {
-  list<shared_ptr<State> >::iterator selected;
+  // unordered_map<State, int>::iterator selected;
+  map<State, int>::iterator selected;
   int minValue = LARGE;
-  shared_ptr<State> s;
-  for(list<shared_ptr<State> >::iterator itr = begin(openState);
+  State s;
+  // for(unordered_map<State, int>::iterator itr = begin(openState);
+  for(map<State, int>::iterator itr = begin(openState);
       itr != end(openState); itr++){
-    if((*itr)->getValue() < minValue){
-      minValue = (*itr)->getValue();
-      s = *itr;
+    if(itr->second < minValue){
+      minValue = itr->second;
+      s = itr->first;
       selected = itr;
     }
   }
@@ -115,16 +126,16 @@ void Solver::displaySolvedMessage(const shared_ptr<State> s) const
   }
 }
 
-list<shared_ptr<State> >::iterator
-Solver::findState(list<shared_ptr<State> >::iterator b,
-		  list<shared_ptr<State> >::iterator e,
-		  shared_ptr<State> s)
-{
-  for(list<shared_ptr<State> >::iterator itr = b;
-      itr != e; itr++){
-    if(**itr == *s){
-      return itr;
-    }
-  }
-  return e;
-}
+// list<shared_ptr<State> >::iterator
+// Solver::findState(list<shared_ptr<State> >::iterator b,
+// 		  list<shared_ptr<State> >::iterator e,
+// 		  shared_ptr<State> s)
+// {
+//   for(list<shared_ptr<State> >::iterator itr = b;
+//       itr != e; itr++){
+//     if(**itr == *s){
+//       return itr;
+//     }
+//   }
+//   return e;
+// }

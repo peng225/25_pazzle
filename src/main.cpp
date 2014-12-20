@@ -5,7 +5,7 @@
 int main()
 {
   State s;
-  s.shuffle(60);
+  // s.shuffle(80);
   s.display();
   Solver solver;
   solver.solve(s);

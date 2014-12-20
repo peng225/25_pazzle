@@ -4,19 +4,6 @@
                    public methods
  ***************************************************/
 
-// State::State(int value, int step, shared_ptr<State> parent)
-// {
-//   board.resize(NUM_PANEL);
-  
-//   for(int i = 0; i < NUM_PANEL - 1; i++){
-//     board.at(i) = i;
-//   }
-//   board.at(NUM_PANEL - 1) = SPACE;
-
-//   this->value = value;
-//   this->step = step;
-//   this->parent = parent;
-// }
 
 int State::getNumber(int pos) const
 {

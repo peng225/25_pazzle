@@ -34,7 +34,7 @@ const vector<Direction> dir = {UP, RIGHT, DOWN, LEFT};
 class State
 {
  public:
- State() : value(0), step(0), parent(NULL)
+ State() : step(0), parent(NULL)
     {
       board.resize(NUM_PANEL);
   
@@ -42,41 +42,37 @@ class State
 	board.at(i) = i;
       }
       board.at(NUM_PANEL - 1) = SPACE;
-      /* board = {0, 1, 2, 3, 4, */
-      /* 	       5, 6, 8, 13, 9, */
-      /* 	       10, 11, 7, 18, 14, */
-      /* 	       15, 16, 12, 22, SPACE, */
-      /* 	       20, 21, 17, 23, 19}; */
+      board = {
+	5, 0, 3, 8, 4,
+	1, 17, 6, 2, 9,
+	15, 12, SPACE, 18, 13,
+	7, 10, 16, 14, 19,
+	20, 11, 21, 22, 23};
     }
-  /* State(int value, int step, shared_ptr<State> parent); */
   int getNumber(int pos) const;
   void setNumber(int pos, int num);
   bool moveSpace(Direction dir);
   void display();
   void shuffle(int numMove);
-  bool operator==(const State& obj) const
+  /* bool operator==(const State& obj) const */
+  /* { */
+  /*   for(int i = 0; i < NUM_PANEL; i++){ */
+  /*     if(board.at(i) != obj.getNumber(i)){ */
+  /* 	return false; */
+  /*     } */
+  /*   } */
+  /*   return true; */
+  /* } */
+  bool operator<(const State& obj) const
   {
     for(int i = 0; i < NUM_PANEL; i++){
-      if(board.at(i) != obj.getNumber(i)){
-	return false;
+      if(board.at(i) < obj.getNumber(i)){
+  	return true;
+      }else if(board.at(i) > obj.getNumber(i)){
+  	return false;
       }
     }
-    return true;
-  }
-
-  bool ordered() const
-  {
-    return (value - step == 0);
-  }
-
-  int getValue() const
-  {
-    return value;
-  }
-
-  void setValue(int value)
-  {
-    this->value = value;
+    return false;
   }
 
   int getStep() const
@@ -98,9 +94,8 @@ class State
     this->parent = parent;
   }
  private:
-  int value;
   int step;
   vector<byte> board;  
-  shared_ptr<State> parent;  
+  shared_ptr<State> parent;
   void swapTwoPos(int firstPos, int secondPos);  
 };
