@@ -4,23 +4,23 @@
                    public methods
  ***************************************************/
 
-State::State(int value, int step, shared_ptr<State> parent)
-{
-  board.resize(NUM_PANEL);
+// State::State(int value, int step, shared_ptr<State> parent)
+// {
+//   board.resize(NUM_PANEL);
   
-  for(int i = 0; i < NUM_PANEL - 1; i++){
-    board.at(i) = i;
-  }
-  board.at(NUM_PANEL - 1) = SPACE;
+//   for(int i = 0; i < NUM_PANEL - 1; i++){
+//     board.at(i) = i;
+//   }
+//   board.at(NUM_PANEL - 1) = SPACE;
 
-  this->value = value;
-  this->step = step;
-  this->parent = parent;
-}
+//   this->value = value;
+//   this->step = step;
+//   this->parent = parent;
+// }
 
 int State::getNumber(int pos) const
 {
-  return board.at(pos);
+  return board[pos];
 }
 
 void State::setNumber(int pos, int num)
@@ -88,6 +88,19 @@ void State::display()
     }
   }
   cout << endl;
+}
+
+void State::shuffle(int numMove)
+{
+  std::random_device seed_gen;
+  std::mt19937 engine(seed_gen());
+  std::uniform_int_distribution<> dist(0, dir.size() - 1);
+  int count = 0;
+  while(count < numMove){
+    if(moveSpace(dir.at(dist(engine)))){
+      count++;
+    }
+  }
 }
 
 
